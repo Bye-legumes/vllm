@@ -545,13 +545,6 @@ class RayDistributedExecutor(DistributedExecutorBase):
             raise ValueError("Ray Compiled Graph is not installed. "
                              "Run `pip install ray[cgraph]` to install it.")
 
-        cupy_spec = importlib.util.find_spec("cupy")
-        if cupy_spec is None and envs.VLLM_USE_RAY_COMPILED_DAG_NCCL_CHANNEL:
-            raise ValueError(
-                "cupy is not installed but required since "
-                "VLLM_USE_RAY_COMPILED_DAG_NCCL_CHANNEL is set. "
-                "Run `pip install ray[cgraph]` and check cupy installation.")
-
     def _compiled_ray_dag(self, enable_asyncio: bool):
         assert self.parallel_config.use_ray
         self._check_ray_cgraph_installation()
@@ -609,7 +602,9 @@ class RayDistributedExecutor(DistributedExecutorBase):
                     # Specify how intermediate tensors should be passed
                     # between pp stages, no need to specify for the last
                     # pp stage.
-                    transport = "nccl" \
+                    # transport = "nccl" \
+                    # TODO: may need another environment variable.
+                    transport = "hccl" \
                         if envs.VLLM_USE_RAY_COMPILED_DAG_NCCL_CHANNEL \
                         else "auto"
                     outputs = [
